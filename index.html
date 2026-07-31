@@ -225,9 +225,11 @@
   .attn-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
   .attn-card.red { border-left-color: var(--danger); }
   .attn-card.amber { border-left-color: var(--amber); }
+  .attn-card.green { border-left-color: var(--win); }
   .attn-card .dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; flex: none; }
   .attn-card .dot.red { background: var(--danger); }
   .attn-card .dot.amber { background: var(--amber); }
+  .attn-card .dot.green { background: var(--win); }
   .attn-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
   .attn-title { font-weight: 700; font-size: 13.5px; margin: 0; }
   .attn-chip {
@@ -236,7 +238,27 @@
   }
   .attn-chip.red { color: #fff; background: var(--danger); }
   .attn-chip.amber { color: var(--ink); background: var(--amber); }
+  .attn-chip.green { color: var(--win); background: var(--win-bg); }
   .attn-detail { font-size: 12.5px; color: var(--slate); margin: 0; }
+  .attn-section-title {
+    font-size: 13px; font-weight: 700; margin: 0 0 12px; display: flex; align-items: baseline; gap: 8px;
+  }
+  .attn-section-title .hint { font-family: var(--mono); font-size: 11px; font-weight: 400; color: var(--slate); }
+
+  /* Monthly targets */
+  .targets-panel { margin-bottom: 18px; }
+  .target-rows { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
+  .target-row { display: grid; grid-template-columns: 140px 1fr 70px; align-items: center; gap: 10px; }
+  .target-name { font-size: 12.5px; font-weight: 600; }
+  .target-track { background: var(--line-soft); border-radius: 5px; height: 10px; overflow: hidden; }
+  .target-fill { display: block; height: 100%; border-radius: 5px; width: 0; transition: width 700ms var(--ease); }
+  .target-fill.green { background: linear-gradient(90deg, color-mix(in srgb, var(--win) 78%, black), var(--win)); }
+  .target-fill.amber { background: linear-gradient(90deg, color-mix(in srgb, var(--amber) 78%, black), var(--amber)); }
+  .target-fill.red { background: linear-gradient(90deg, color-mix(in srgb, var(--danger) 78%, black), var(--danger)); }
+  .target-value { font-family: var(--mono); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+  .target-value.green { color: var(--win); }
+  .target-value.amber { color: var(--amber); }
+  .target-value.red { color: var(--danger); }
   .attn-empty {
     grid-column: 1 / -1; text-align: center; padding: 18px; font-size: 13px; color: var(--slate);
     border: 1px dashed var(--line); border-radius: var(--radius);
@@ -286,16 +308,21 @@
       animation: rise 420ms var(--ease) both;
     }
     .health-banner { animation-delay: 0ms; }
-    .attn-grid .attn-card:nth-child(1) { animation-delay: 60ms; }
-    .attn-grid .attn-card:nth-child(2) { animation-delay: 110ms; }
-    .kpi-grid .kpi-card:nth-child(1) { animation-delay: 140ms; }
-    .kpi-grid .kpi-card:nth-child(2) { animation-delay: 170ms; }
-    .kpi-grid .kpi-card:nth-child(3) { animation-delay: 200ms; }
-    .kpi-grid .kpi-card:nth-child(4) { animation-delay: 230ms; }
-    .kpi-grid .kpi-card:nth-child(5) { animation-delay: 260ms; }
-    .kpi-grid .kpi-card:nth-child(6) { animation-delay: 290ms; }
-    .panel-grid .panel:nth-child(1) { animation-delay: 320ms; }
-    .panel-grid .panel:nth-child(2) { animation-delay: 350ms; }
+    .attn-grid .attn-card:nth-child(1) { animation-delay: 50ms; }
+    .attn-grid .attn-card:nth-child(2) { animation-delay: 75ms; }
+    .attn-grid .attn-card:nth-child(3) { animation-delay: 100ms; }
+    .attn-grid .attn-card:nth-child(4) { animation-delay: 125ms; }
+    .attn-grid .attn-card:nth-child(5) { animation-delay: 150ms; }
+    .attn-grid .attn-card:nth-child(6) { animation-delay: 175ms; }
+    .kpi-grid .kpi-card:nth-child(1) { animation-delay: 200ms; }
+    .kpi-grid .kpi-card:nth-child(2) { animation-delay: 225ms; }
+    .kpi-grid .kpi-card:nth-child(3) { animation-delay: 250ms; }
+    .kpi-grid .kpi-card:nth-child(4) { animation-delay: 275ms; }
+    .kpi-grid .kpi-card:nth-child(5) { animation-delay: 300ms; }
+    .kpi-grid .kpi-card:nth-child(6) { animation-delay: 325ms; }
+    .targets-panel { animation-delay: 350ms; }
+    .panel-grid .panel:nth-child(1) { animation-delay: 375ms; }
+    .panel-grid .panel:nth-child(2) { animation-delay: 400ms; }
   }
   @keyframes rise {
     from { opacity: 0; transform: translateY(10px); }
@@ -353,9 +380,19 @@
     </div>
   </div>
 
+  <p class="attn-section-title">System health check <span class="hint">— every automation, at a glance</span></p>
   <div class="attn-grid" id="attnGrid"></div>
 
   <div class="kpi-grid" id="kpiGrid"></div>
+
+  <div class="panel targets-panel">
+    <div class="panel-title">
+      <h2>Monthly targets</h2>
+      <span class="hint">this month vs. goal</span>
+    </div>
+    <p class="panel-note">Show-up rate is Call Completed ÷ Call Booked — the cleanest read on whether booked calls actually happen.</p>
+    <div class="target-rows" id="targetRows"></div>
+  </div>
 
   <div class="panel-grid">
     <div class="panel">
@@ -428,9 +465,11 @@ loginForgot.addEventListener("click", () => loginForgotNote.classList.toggle("sh
 ---------------------------------------------------------------- */
 const DATA = {
   updated: "31 Jul 2026, 9:40 AM",
-  goals: { leadsPerMonth: 20, callsPerMonth: 10 },
+  goals: { leadsPerMonth: 20, callsPerMonth: 10, enrolmentsPerMonth: 4 },
   leads: { thisWeek: 8, lastWeek: 6, thisMonth: 26, lastMonth: 19, allTime: 61 },
-  calls: { bookedThisMonth: 7, bookedLastMonth: 5, bookedAllTime: 15, wonAllTime: 3 },
+  calls: { bookedThisMonth: 7, bookedLastMonth: 5, bookedAllTime: 15, wonAllTime: 3, wonThisMonth: 2 },
+  landingPage: { conversionPct: 22, visitorsThisWeek: 36 },
+  nurture: { openRatePct: 63 },
   funnel: [
     { stage: "Lead Captured",   count: 26 },
     { stage: "Nurturing",       count: 24 },
@@ -455,6 +494,21 @@ const DATA = {
       level: "amber",
       title: "Instagram link-in-bio CTR softening",
       detail: "2.1% this week vs a 3.4% four-week average. Not urgent yet, but if it keeps trending down, next month's lead volume will feel it before the dashboard does.",
+    },
+    {
+      level: "green",
+      title: "Lead magnet delivery",
+      detail: "All 26 requests for the 5-Day Kickstart Guide delivered this month — WF1's auto-responder hasn't missed one.",
+    },
+    {
+      level: "green",
+      title: "Email nurture sequence",
+      detail: "5-email flow running on schedule with a 63% open rate — well above the ~40% industry norm for coaching nurture sequences.",
+    },
+    {
+      level: "green",
+      title: "Landing page",
+      detail: "Converting at 22% this week (36 visitors → 8 leads) — steady, no action needed.",
     },
   ],
 };
@@ -518,13 +572,37 @@ attnGrid.innerHTML = DATA.alerts.length
       <div>
         <div class="attn-head">
           <p class="attn-title">${a.title}</p>
-          <span class="attn-chip ${a.level}">${a.level === "red" ? "Priority" : "Watch"}</span>
+          <span class="attn-chip ${a.level}">${a.level === "red" ? "Priority" : a.level === "amber" ? "Watch" : "OK"}</span>
         </div>
         <p class="attn-detail">${a.detail}</p>
       </div>
     </div>
   `).join("")
   : `<div class="attn-empty">Nothing needs your attention right now.</div>`;
+
+/* ---- Monthly targets ---- */
+const showUpRate = pct(DATA.funnel.find(s => s.stage === "Call Completed").count, DATA.funnel.find(s => s.stage === "Call Booked").count);
+const targets = [
+  { name: `Leads (${DATA.goals.leadsPerMonth})`, current: DATA.leads.thisMonth, goal: DATA.goals.leadsPerMonth, display: `${DATA.leads.thisMonth}/${DATA.goals.leadsPerMonth}` },
+  { name: `Calls booked (${DATA.goals.callsPerMonth})`, current: DATA.calls.bookedThisMonth, goal: DATA.goals.callsPerMonth, display: `${DATA.calls.bookedThisMonth}/${DATA.goals.callsPerMonth}` },
+  { name: `Enrolments (${DATA.goals.enrolmentsPerMonth})`, current: DATA.calls.wonThisMonth, goal: DATA.goals.enrolmentsPerMonth, display: `${DATA.calls.wonThisMonth}/${DATA.goals.enrolmentsPerMonth}` },
+  { name: "Show-up rate", current: showUpRate, goal: 100, display: `${showUpRate}%` },
+];
+const targetRows = document.getElementById("targetRows");
+targetRows.innerHTML = targets.map(t => {
+  const ratio = pct(t.current, t.goal);
+  const status = statusFor(ratio);
+  return `
+    <div class="target-row">
+      <span class="target-name">${t.name}</span>
+      <span class="target-track"><span class="target-fill ${status}" data-target="${Math.min(ratio, 100)}"></span></span>
+      <span class="target-value ${status}">${t.display}</span>
+    </div>
+  `;
+}).join("");
+requestAnimationFrame(() => requestAnimationFrame(() => {
+  document.querySelectorAll(".target-fill").forEach(el => { el.style.width = el.dataset.target + "%"; });
+}));
 
 /* ---- Theme toggle ---- */
 const themeToggle = document.getElementById("themeToggle");
