@@ -61,6 +61,13 @@
     display: flex; justify-content: space-between; align-items: flex-start;
     gap: 20px; flex-wrap: wrap; margin-bottom: 28px;
   }
+  .theme-toggle {
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.04em;
+    background: var(--paper-raised); color: var(--slate); border: 1px solid var(--line);
+    border-radius: 20px; padding: 7px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .theme-toggle:hover { border-color: var(--teal); color: var(--teal); }
+  .theme-toggle:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
   .brand-eyebrow {
     font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase;
     color: var(--slate); margin: 0 0 6px;
@@ -104,13 +111,31 @@
   }
   .kpi-value { font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; margin: 0; line-height: 1; }
   .kpi-value .unit { font-size: 15px; font-weight: 600; color: var(--slate); margin-left: 4px; }
-  .kpi-sub { font-size: 12.5px; color: var(--slate); margin: 8px 0 0; display: flex; align-items: center; gap: 6px; }
+  .kpi-sub { font-size: 12.5px; color: var(--slate); margin: 8px 0 0; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .kpi-action { font-size: 12px; color: var(--ink); margin: 6px 0 0; padding-top: 6px; border-top: 1px dashed var(--line-soft); }
+  .kpi-action b { font-weight: 700; }
   .pill {
     font-family: var(--mono); font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 20px;
   }
   .pill.green { color: var(--win); background: var(--win-bg); }
   .pill.amber { color: var(--amber); background: var(--amber-bg); }
   .pill.red { color: var(--danger); background: var(--danger-bg); }
+
+  /* Attention needed */
+  .attn-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 32px; }
+  .attn-card {
+    background: var(--paper-raised); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px 18px; display: flex; gap: 12px;
+  }
+  .attn-card .dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; flex: none; }
+  .attn-card .dot.red { background: var(--danger); }
+  .attn-card .dot.amber { background: var(--amber); }
+  .attn-title { font-weight: 700; font-size: 13.5px; margin: 0 0 4px; }
+  .attn-detail { font-size: 12.5px; color: var(--slate); margin: 0; }
+  .attn-empty {
+    grid-column: 1 / -1; text-align: center; padding: 18px; font-size: 13px; color: var(--slate);
+    border: 1px dashed var(--line); border-radius: var(--radius);
+  }
 
   /* Panels */
   .panel-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; margin-bottom: 18px; }
@@ -155,6 +180,9 @@
       <h1>Peak Performance PT</h1>
       <p class="updated">Last updated <b id="updatedStamp">—</b> · Goal: 20 leads / 10 discovery calls per month</p>
     </div>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode">
+      <span id="themeIcon">🌙</span> <span id="themeLabel">Dark mode</span>
+    </button>
   </div>
 
   <div class="health-banner">
@@ -165,6 +193,8 @@
       <p class="sub" id="healthSub">—</p>
     </div>
   </div>
+
+  <div class="attn-grid" id="attnGrid"></div>
 
   <div class="kpi-grid" id="kpiGrid"></div>
 
@@ -219,6 +249,18 @@ const DATA = {
     leads:  [4, 5, 4, 6, 5, 7, 6, 8],
     calls:  [1, 1, 1, 2, 2, 1, 2, 2],
   },
+  alerts: [
+    {
+      level: "red",
+      title: "3 contacts stuck in Call Booked for 8+ days",
+      detail: "No outcome has been logged since the discovery call was booked. WF2 only handles the 24h/1h reminders — these need a manual check to see if the call actually happened.",
+    },
+    {
+      level: "amber",
+      title: "Instagram link-in-bio CTR softening",
+      detail: "2.1% this week vs a 3.4% four-week average. Not urgent yet, but if it keeps trending down, next month's lead volume will feel it before the dashboard does.",
+    },
+  ],
 };
 
 function pct(a, b) { return b === 0 ? 0 : Math.round((a / b) * 1000) / 10; }
@@ -247,7 +289,8 @@ const kpis = [
   { label: "Leads — this week", value: DATA.leads.thisWeek, sub: `vs ${DATA.leads.lastWeek} last week`, status: DATA.leads.thisWeek >= DATA.leads.lastWeek ? "green" : "amber" },
   { label: "Leads — this month", value: DATA.leads.thisMonth, unit: `/ ${DATA.goals.leadsPerMonth} goal`, status: leadsStatus, pillText: `${leadsRatio}%` },
   { label: "Leads — all time", value: DATA.leads.allTime, status: "green" },
-  { label: "Calls booked — this month", value: DATA.calls.bookedThisMonth, unit: `/ ${DATA.goals.callsPerMonth} goal`, status: callsStatus, pillText: `${callsRatio}%` },
+  { label: "Calls booked — this month", value: DATA.calls.bookedThisMonth, unit: `/ ${DATA.goals.callsPerMonth} goal`, status: callsStatus, pillText: `${callsRatio}%`,
+    action: callsStatus !== "green" ? "Do this: send a personal follow-up to your 3 warmest uncontacted leads today." : null },
   { label: "Calls booked — all time", value: DATA.calls.bookedAllTime, status: "green" },
   { label: "Clients won — all time", value: DATA.calls.wonAllTime, status: "green" },
 ];
@@ -257,8 +300,41 @@ kpiGrid.innerHTML = kpis.map(k => `
     <p class="kpi-label">${k.label}</p>
     <p class="kpi-value">${k.value}${k.unit ? `<span class="unit">${k.unit}</span>` : ""}</p>
     <p class="kpi-sub">${k.pillText ? `<span class="pill ${k.status}">${k.pillText}</span>` : ""}${k.sub || ""}</p>
+    ${k.action ? `<p class="kpi-action">${k.action}</p>` : ""}
   </div>
 `).join("");
+
+/* ---- Attention needed ---- */
+const attnGrid = document.getElementById("attnGrid");
+attnGrid.innerHTML = DATA.alerts.length
+  ? DATA.alerts.map(a => `
+    <div class="attn-card">
+      <span class="dot ${a.level}"></span>
+      <div>
+        <p class="attn-title">${a.title}</p>
+        <p class="attn-detail">${a.detail}</p>
+      </div>
+    </div>
+  `).join("")
+  : `<div class="attn-empty">Nothing needs your attention right now.</div>`;
+
+/* ---- Theme toggle ---- */
+const themeToggle = document.getElementById("themeToggle");
+const themeIcon = document.getElementById("themeIcon");
+const themeLabel = document.getElementById("themeLabel");
+function applyTheme(mode) {
+  document.documentElement.setAttribute("data-theme", mode);
+  themeIcon.textContent = mode === "dark" ? "☀️" : "🌙";
+  themeLabel.textContent = mode === "dark" ? "Light mode" : "Dark mode";
+}
+const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+let currentTheme = localStorage.getItem("pp-theme") || (prefersDark ? "dark" : "light");
+applyTheme(currentTheme);
+themeToggle.addEventListener("click", () => {
+  currentTheme = currentTheme === "dark" ? "light" : "dark";
+  localStorage.setItem("pp-theme", currentTheme);
+  applyTheme(currentTheme);
+});
 
 /* ---- Funnel ---- */
 const funnelMax = DATA.funnel[0].count;
