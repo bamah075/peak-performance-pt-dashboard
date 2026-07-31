@@ -54,7 +54,49 @@
     font-family: var(--grotesk);
     line-height: 1.45;
   }
+  #dashboardApp { display: none; }
+  body.authed #dashboardApp { display: block; }
+  body.authed #loginGate { display: none; }
   .wrap { max-width: 1180px; margin: 0 auto; padding: 32px 24px 80px; }
+
+  /* Login gate */
+  #loginGate {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px;
+  }
+  .login-card {
+    width: 100%; max-width: 380px; background: var(--paper-raised); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 32px 30px; text-align: center;
+  }
+  .login-mark {
+    width: 40px; height: 40px; border-radius: 10px; background: var(--teal); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 17px;
+    margin: 0 auto 18px;
+  }
+  .login-card h1 { font-size: 19px; margin: 0 0 4px; }
+  .login-card .sub { font-size: 13px; color: var(--slate); margin: 0 0 22px; }
+  .login-field { text-align: left; margin-bottom: 14px; }
+  .login-field label {
+    display: block; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--slate); margin-bottom: 5px;
+  }
+  .login-field input {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 4px;
+    background: var(--paper); color: var(--ink); font-size: 14px; font-family: var(--grotesk);
+  }
+  .login-field input:focus-visible { outline: 2px solid var(--teal); outline-offset: 1px; }
+  .login-submit {
+    width: 100%; padding: 11px; margin-top: 4px; border: none; border-radius: 4px;
+    background: var(--teal); color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
+  }
+  .login-submit:hover { opacity: 0.92; }
+  .login-error {
+    font-size: 12.5px; color: var(--danger); margin: 12px 0 0; min-height: 16px;
+  }
+  .login-demo {
+    margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--line-soft);
+    font-family: var(--mono); font-size: 11px; color: var(--slate); line-height: 1.7; text-align: left;
+  }
+  .login-demo b { color: var(--ink); }
 
   /* Header */
   .topbar {
@@ -172,6 +214,33 @@
 </style>
 </head>
 <body>
+
+<div id="loginGate">
+  <div class="login-card">
+    <div class="login-mark">PP</div>
+    <h1>Peak Performance PT</h1>
+    <p class="sub">Sign in to view your client dashboard</p>
+    <form id="loginForm">
+      <div class="login-field">
+        <label for="loginEmail">Email</label>
+        <input id="loginEmail" type="email" autocomplete="username" required />
+      </div>
+      <div class="login-field">
+        <label for="loginPassword">Password</label>
+        <input id="loginPassword" type="password" autocomplete="current-password" required />
+      </div>
+      <button class="login-submit" type="submit">Log in</button>
+      <p class="login-error" id="loginError"></p>
+    </form>
+    <p class="login-demo">
+      <b>Demo login</b> — this is a proof-of-concept gate for the practical test, checked in the
+      browser rather than a real backend. Use:<br>
+      <b>sarah@peakperformancept.com.au</b> / <b>peakpt2026</b>
+    </p>
+  </div>
+</div>
+
+<div id="dashboardApp">
 <div class="wrap">
 
   <div class="topbar">
@@ -224,8 +293,40 @@
   </footer>
 
 </div>
+</div>
 
 <script>
+/* ---------------------------------------------------------------
+   LOGIN GATE — demo only. This checks credentials in the browser,
+   which means the "password" is visible to anyone who views source.
+   Good enough to demo the UX; NOT how production auth should work.
+   Production path: Netlify Identity / Supabase Auth / Auth0 — real
+   accounts, hashed passwords, a session token, none of it in this file.
+---------------------------------------------------------------- */
+const DEMO_EMAIL = "sarah@peakperformancept.com.au";
+const DEMO_PASSWORD = "peakpt2026";
+const loginForm = document.getElementById("loginForm");
+const loginError = document.getElementById("loginError");
+
+function grantAccess() {
+  document.body.classList.add("authed");
+  sessionStorage.setItem("pp-authed", "1");
+}
+
+if (sessionStorage.getItem("pp-authed") === "1") grantAccess();
+
+loginForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+  const password = document.getElementById("loginPassword").value;
+  if (email === DEMO_EMAIL && password === DEMO_PASSWORD) {
+    loginError.textContent = "";
+    grantAccess();
+  } else {
+    loginError.textContent = "Incorrect email or password. Try the demo credentials below.";
+  }
+});
+
 /* ---------------------------------------------------------------
    DUMMY DATA — swap this object for a live GHL / Sheets feed later.
    All KPI, health, and chart logic below derives from this alone.
