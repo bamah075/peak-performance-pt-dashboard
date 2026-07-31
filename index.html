@@ -24,6 +24,10 @@
     --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace;
     --grotesk: "Helvetica Neue", Arial, ui-sans-serif, sans-serif;
     --radius: 6px;
+    --shadow-sm: 0 1px 2px rgba(23,34,42,0.06), 0 1px 1px rgba(23,34,42,0.04);
+    --shadow-md: 0 8px 24px rgba(23,34,42,0.10), 0 2px 6px rgba(23,34,42,0.06);
+    --shadow-lg: 0 24px 60px rgba(23,34,42,0.18), 0 4px 12px rgba(23,34,42,0.08);
+    --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -31,6 +35,8 @@
       --line: #2c383b; --line-soft: #232d30;
       --accent: #ff7a5c; --teal: #4fb3ad; --amber: #e8b455; --amber-bg: #2c260f;
       --slate: #9fb0b5; --danger: #e07357; --danger-bg: #2c1712; --win: #4fbd82; --win-bg: #10281a;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.35); --shadow-md: 0 10px 28px rgba(0,0,0,0.45);
+      --shadow-lg: 0 28px 70px rgba(0,0,0,0.55);
     }
   }
   :root[data-theme="dark"] {
@@ -38,6 +44,8 @@
     --line: #2c383b; --line-soft: #232d30;
     --accent: #ff7a5c; --teal: #4fb3ad; --amber: #e8b455; --amber-bg: #2c260f;
     --slate: #9fb0b5; --danger: #e07357; --danger-bg: #2c1712; --win: #4fbd82; --win-bg: #10281a;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.35); --shadow-md: 0 10px 28px rgba(0,0,0,0.45);
+    --shadow-lg: 0 28px 70px rgba(0,0,0,0.55);
   }
   :root[data-theme="light"] {
     --ink: #17222a; --paper: #f2f4f2; --paper-raised: #ffffff;
@@ -62,33 +70,71 @@
   /* Login gate */
   #loginGate {
     min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px;
+    background:
+      radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--teal) 16%, transparent), transparent 42%),
+      radial-gradient(circle at 84% 88%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 45%),
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 32px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/32px 100%,
+      var(--paper);
+    background-blend-mode: normal, normal, normal, normal, normal;
   }
   .login-card {
     width: 100%; max-width: 380px; background: var(--paper-raised); border: 1px solid var(--line);
-    border-radius: var(--radius); padding: 32px 30px; text-align: center;
+    border-radius: calc(var(--radius) + 4px); padding: 36px 32px; text-align: center;
+    box-shadow: var(--shadow-lg);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .login-card { animation: login-rise 480ms var(--ease) both; }
+  }
+  @keyframes login-rise {
+    from { opacity: 0; transform: translateY(14px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
   }
   .login-mark {
-    width: 40px; height: 40px; border-radius: 10px; background: var(--teal); color: #fff;
-    display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 17px;
-    margin: 0 auto 18px;
+    width: 44px; height: 44px; border-radius: 12px;
+    background: linear-gradient(155deg, var(--teal), color-mix(in srgb, var(--teal) 70%, black));
+    color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 17px;
+    margin: 0 auto 18px; box-shadow: 0 6px 16px color-mix(in srgb, var(--teal) 45%, transparent);
+    letter-spacing: 0.02em;
   }
-  .login-card h1 { font-size: 19px; margin: 0 0 4px; }
-  .login-card .sub { font-size: 13px; color: var(--slate); margin: 0 0 22px; }
+  .login-card h1 { font-size: 20px; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .login-card .sub { font-size: 13px; color: var(--slate); margin: 0 0 24px; }
   .login-field { text-align: left; margin-bottom: 14px; }
   .login-field label {
     display: block; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase;
     color: var(--slate); margin-bottom: 5px;
   }
   .login-field input {
-    width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 4px;
+    width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 5px;
     background: var(--paper); color: var(--ink); font-size: 14px; font-family: var(--grotesk);
+    transition: border-color 140ms var(--ease), box-shadow 140ms var(--ease);
   }
-  .login-field input:focus-visible { outline: 2px solid var(--teal); outline-offset: 1px; }
+  .login-field input:focus-visible {
+    outline: none; border-color: var(--teal);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 22%, transparent);
+  }
+  .login-row {
+    display: flex; align-items: center; justify-content: space-between; margin: 2px 0 18px;
+    font-size: 12px; color: var(--slate);
+  }
+  .login-remember { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+  .login-remember input { accent-color: var(--teal); cursor: pointer; }
+  .login-forgot { color: var(--teal); text-decoration: none; font-weight: 600; background: none; border: none; padding: 0; font-size: 12px; cursor: pointer; font-family: inherit; }
+  .login-forgot:hover { text-decoration: underline; }
+  .login-forgot-note {
+    font-size: 11.5px; color: var(--slate); margin: 10px 0 0; text-align: left;
+    background: var(--paper); border: 1px solid var(--line-soft); border-radius: 4px; padding: 8px 10px;
+    display: none;
+  }
+  .login-forgot-note.shown { display: block; }
   .login-submit {
-    width: 100%; padding: 11px; margin-top: 4px; border: none; border-radius: 4px;
+    width: 100%; padding: 12px; margin-top: 4px; border: none; border-radius: 5px;
     background: var(--teal); color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
+    transition: transform 140ms var(--ease), box-shadow 140ms var(--ease), opacity 140ms var(--ease);
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--teal) 35%, transparent);
   }
-  .login-submit:hover { opacity: 0.92; }
+  .login-submit:hover { opacity: 0.95; transform: translateY(-1px); box-shadow: 0 8px 20px color-mix(in srgb, var(--teal) 42%, transparent); }
+  .login-submit:active { transform: translateY(0); }
   .login-error {
     font-size: 12.5px; color: var(--danger); margin: 12px 0 0; min-height: 16px;
   }
@@ -137,8 +183,10 @@
   }
   .kpi-card {
     background: var(--paper-raised); border: 1px solid var(--line); border-left: 3px solid var(--teal);
-    border-radius: var(--radius); padding: 16px 18px;
+    border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow-sm);
+    transition: transform 160ms var(--ease), box-shadow 160ms var(--ease);
   }
+  .kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
   .kpi-card.status-amber { border-left-color: var(--amber); }
   .kpi-card.status-red { border-left-color: var(--danger); }
   .kpi-card.status-green { border-left-color: var(--win); }
@@ -149,7 +197,16 @@
   .kpi-value { font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; margin: 0; line-height: 1; }
   .kpi-value .unit { font-size: 15px; font-weight: 600; color: var(--slate); margin-left: 4px; }
   .kpi-sub { font-size: 12.5px; color: var(--slate); margin: 8px 0 0; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-  .kpi-action { font-size: 12px; color: var(--ink); margin: 6px 0 0; padding-top: 6px; border-top: 1px dashed var(--line-soft); }
+  .kpi-trend { font-weight: 700; display: inline-flex; align-items: center; gap: 2px; }
+  .kpi-trend.up { color: var(--win); }
+  .kpi-trend.down { color: var(--danger); }
+  .kpi-trend.flat { color: var(--slate); }
+  .kpi-action {
+    font-size: 12px; color: var(--ink); margin: 10px -18px -16px; padding: 10px 18px;
+    border-top: 1px solid var(--line-soft); border-radius: 0 0 calc(var(--radius) - 1px) calc(var(--radius) - 1px);
+    background: color-mix(in srgb, var(--amber) 8%, transparent);
+  }
+  .kpi-card.status-red .kpi-action { background: color-mix(in srgb, var(--danger) 8%, transparent); }
   .kpi-action b { font-weight: 700; }
   .pill {
     font-family: var(--mono); font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 20px;
@@ -161,13 +218,24 @@
   /* Attention needed */
   .attn-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 32px; }
   .attn-card {
-    background: var(--paper-raised); border: 1px solid var(--line); border-radius: var(--radius);
-    padding: 16px 18px; display: flex; gap: 12px;
+    background: var(--paper-raised); border: 1px solid var(--line); border-left: 3px solid var(--line);
+    border-radius: var(--radius); padding: 16px 18px; display: flex; gap: 12px;
+    box-shadow: var(--shadow-sm); transition: transform 160ms var(--ease), box-shadow 160ms var(--ease);
   }
+  .attn-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+  .attn-card.red { border-left-color: var(--danger); }
+  .attn-card.amber { border-left-color: var(--amber); }
   .attn-card .dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; flex: none; }
   .attn-card .dot.red { background: var(--danger); }
   .attn-card .dot.amber { background: var(--amber); }
-  .attn-title { font-weight: 700; font-size: 13.5px; margin: 0 0 4px; }
+  .attn-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+  .attn-title { font-weight: 700; font-size: 13.5px; margin: 0; }
+  .attn-chip {
+    font-family: var(--mono); font-size: 9.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 20px; flex: none;
+  }
+  .attn-chip.red { color: #fff; background: var(--danger); }
+  .attn-chip.amber { color: var(--ink); background: var(--amber); }
   .attn-detail { font-size: 12.5px; color: var(--slate); margin: 0; }
   .attn-empty {
     grid-column: 1 / -1; text-align: center; padding: 18px; font-size: 13px; color: var(--slate);
@@ -179,8 +247,9 @@
   @media (max-width: 900px) { .panel-grid { grid-template-columns: 1fr; } }
   .panel {
     background: var(--paper-raised); border: 1px solid var(--line); border-radius: var(--radius);
-    padding: 20px 22px;
+    padding: 20px 22px; box-shadow: var(--shadow-sm); transition: box-shadow 160ms var(--ease);
   }
+  .panel:hover { box-shadow: var(--shadow-md); }
   .panel-title {
     display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px;
   }
@@ -191,12 +260,16 @@
   .chart-box canvas { min-width: 480px; }
 
   /* Funnel table */
-  .funnel-rows { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+  .funnel-rows { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
   .funnel-row { display: grid; grid-template-columns: 128px 1fr 46px 60px; align-items: center; gap: 10px; }
   .funnel-name { font-size: 12.5px; font-weight: 600; }
-  .funnel-track { background: var(--line-soft); border-radius: 4px; height: 10px; position: relative; overflow: hidden; }
-  .funnel-fill { display: block; background: var(--teal); height: 100%; border-radius: 4px; }
-  .funnel-fill.weak { background: var(--danger); }
+  .funnel-track { background: var(--line-soft); border-radius: 5px; height: 12px; position: relative; overflow: hidden; }
+  .funnel-fill {
+    display: block; height: 100%; border-radius: 5px; width: 0;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--teal) 78%, black), var(--teal));
+    transition: width 700ms var(--ease);
+  }
+  .funnel-fill.weak { background: linear-gradient(90deg, color-mix(in srgb, var(--danger) 78%, black), var(--danger)); }
   .funnel-count { font-family: var(--mono); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; }
   .funnel-conv { font-family: var(--mono); font-size: 11px; text-align: right; color: var(--slate); font-variant-numeric: tabular-nums; }
   .funnel-conv.weak { color: var(--danger); font-weight: 700; }
@@ -205,6 +278,28 @@
     margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line);
     font-family: var(--mono); font-size: 11px; color: var(--slate);
     display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
+
+  /* Entrance choreography */
+  @media (prefers-reduced-motion: no-preference) {
+    .health-banner, .attn-card, .kpi-card, .panel {
+      animation: rise 420ms var(--ease) both;
+    }
+    .health-banner { animation-delay: 0ms; }
+    .attn-grid .attn-card:nth-child(1) { animation-delay: 60ms; }
+    .attn-grid .attn-card:nth-child(2) { animation-delay: 110ms; }
+    .kpi-grid .kpi-card:nth-child(1) { animation-delay: 140ms; }
+    .kpi-grid .kpi-card:nth-child(2) { animation-delay: 170ms; }
+    .kpi-grid .kpi-card:nth-child(3) { animation-delay: 200ms; }
+    .kpi-grid .kpi-card:nth-child(4) { animation-delay: 230ms; }
+    .kpi-grid .kpi-card:nth-child(5) { animation-delay: 260ms; }
+    .kpi-grid .kpi-card:nth-child(6) { animation-delay: 290ms; }
+    .panel-grid .panel:nth-child(1) { animation-delay: 320ms; }
+    .panel-grid .panel:nth-child(2) { animation-delay: 350ms; }
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 </style>
 </head>
@@ -224,8 +319,13 @@
         <label for="loginPassword">Password</label>
         <input id="loginPassword" type="password" autocomplete="current-password" required />
       </div>
+      <div class="login-row">
+        <label class="login-remember"><input type="checkbox" id="loginRemember" /> Remember me</label>
+        <button type="button" class="login-forgot" id="loginForgot">Forgot password?</button>
+      </div>
       <button class="login-submit" type="submit">Log in</button>
       <p class="login-error" id="loginError"></p>
+      <p class="login-forgot-note" id="loginForgotNote">Password resets go through your Peak Performance PT account manager — reach out and they'll get you back in within one business day.</p>
     </form>
   </div>
 </div>
@@ -297,25 +397,30 @@ const DEMO_EMAIL = "sarah@peakperformancept.com.au";
 const DEMO_PASSWORD = "peakpt2026";
 const loginForm = document.getElementById("loginForm");
 const loginError = document.getElementById("loginError");
+const loginForgot = document.getElementById("loginForgot");
+const loginForgotNote = document.getElementById("loginForgotNote");
 
-function grantAccess() {
+function grantAccess(remember) {
   document.body.classList.add("authed");
-  sessionStorage.setItem("pp-authed", "1");
+  (remember ? localStorage : sessionStorage).setItem("pp-authed", "1");
 }
 
-if (sessionStorage.getItem("pp-authed") === "1") grantAccess();
+if (sessionStorage.getItem("pp-authed") === "1" || localStorage.getItem("pp-authed") === "1") grantAccess(false);
 
 loginForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const email = document.getElementById("loginEmail").value.trim().toLowerCase();
   const password = document.getElementById("loginPassword").value;
+  const remember = document.getElementById("loginRemember").checked;
   if (email === DEMO_EMAIL && password === DEMO_PASSWORD) {
     loginError.textContent = "";
-    grantAccess();
+    grantAccess(remember);
   } else {
-    loginError.textContent = "Incorrect email or password. Try the demo credentials below.";
+    loginError.textContent = "Incorrect email or password. Please try again.";
   }
 });
+
+loginForgot.addEventListener("click", () => loginForgotNote.classList.toggle("shown"));
 
 /* ---------------------------------------------------------------
    DUMMY DATA — swap this object for a live GHL / Sheets feed later.
@@ -324,8 +429,8 @@ loginForm.addEventListener("submit", (e) => {
 const DATA = {
   updated: "31 Jul 2026, 9:40 AM",
   goals: { leadsPerMonth: 20, callsPerMonth: 10 },
-  leads: { thisWeek: 8, lastWeek: 6, thisMonth: 26, allTime: 61 },
-  calls: { bookedThisMonth: 7, bookedAllTime: 15, wonAllTime: 3 },
+  leads: { thisWeek: 8, lastWeek: 6, thisMonth: 26, lastMonth: 19, allTime: 61 },
+  calls: { bookedThisMonth: 7, bookedLastMonth: 5, bookedAllTime: 15, wonAllTime: 3 },
   funnel: [
     { stage: "Lead Captured",   count: 26 },
     { stage: "Nurturing",       count: 24 },
@@ -356,6 +461,14 @@ const DATA = {
 
 function pct(a, b) { return b === 0 ? 0 : Math.round((a / b) * 1000) / 10; }
 function statusFor(ratio) { return ratio >= 80 ? "green" : ratio >= 50 ? "amber" : "red"; }
+function trend(current, previous, label) {
+  if (previous === undefined || previous === null) return "";
+  const delta = pct(current - previous, previous);
+  const dir = current > previous ? "up" : current < previous ? "down" : "flat";
+  const arrow = dir === "up" ? "▲" : dir === "down" ? "▼" : "▬";
+  const deltaText = dir === "flat" ? "flat" : `${delta > 0 ? "+" : ""}${delta}%`;
+  return `<span class="kpi-trend ${dir}">${arrow} ${deltaText}</span> ${label}`;
+}
 
 document.getElementById("updatedStamp").textContent = DATA.updated;
 
@@ -377,11 +490,12 @@ document.getElementById("healthSub").textContent =
 
 /* ---- KPI cards ---- */
 const kpis = [
-  { label: "Leads — this week", value: DATA.leads.thisWeek, sub: `vs ${DATA.leads.lastWeek} last week`, status: DATA.leads.thisWeek >= DATA.leads.lastWeek ? "green" : "amber" },
-  { label: "Leads — this month", value: DATA.leads.thisMonth, unit: `/ ${DATA.goals.leadsPerMonth} goal`, status: leadsStatus, pillText: `${leadsRatio}%` },
+  { label: "Leads — this week", value: DATA.leads.thisWeek, sub: trend(DATA.leads.thisWeek, DATA.leads.lastWeek, "vs last week"), status: DATA.leads.thisWeek >= DATA.leads.lastWeek ? "green" : "amber" },
+  { label: "Leads — this month", value: DATA.leads.thisMonth, unit: `/ ${DATA.goals.leadsPerMonth} goal`, status: leadsStatus, pillText: `${leadsRatio}%`, sub: trend(DATA.leads.thisMonth, DATA.leads.lastMonth, "vs last month") },
   { label: "Leads — all time", value: DATA.leads.allTime, status: "green" },
   { label: "Calls booked — this month", value: DATA.calls.bookedThisMonth, unit: `/ ${DATA.goals.callsPerMonth} goal`, status: callsStatus, pillText: `${callsRatio}%`,
-    action: callsStatus !== "green" ? "Do this: send a personal follow-up to your 3 warmest uncontacted leads today." : null },
+    sub: trend(DATA.calls.bookedThisMonth, DATA.calls.bookedLastMonth, "vs last month"),
+    action: callsStatus !== "green" ? "<b>Do this:</b> send a personal follow-up to your 3 warmest uncontacted leads today." : null },
   { label: "Calls booked — all time", value: DATA.calls.bookedAllTime, status: "green" },
   { label: "Clients won — all time", value: DATA.calls.wonAllTime, status: "green" },
 ];
@@ -399,10 +513,13 @@ kpiGrid.innerHTML = kpis.map(k => `
 const attnGrid = document.getElementById("attnGrid");
 attnGrid.innerHTML = DATA.alerts.length
   ? DATA.alerts.map(a => `
-    <div class="attn-card">
+    <div class="attn-card ${a.level}">
       <span class="dot ${a.level}"></span>
       <div>
-        <p class="attn-title">${a.title}</p>
+        <div class="attn-head">
+          <p class="attn-title">${a.title}</p>
+          <span class="attn-chip ${a.level}">${a.level === "red" ? "Priority" : "Watch"}</span>
+        </div>
         <p class="attn-detail">${a.detail}</p>
       </div>
     </div>
@@ -425,6 +542,7 @@ themeToggle.addEventListener("click", () => {
   currentTheme = currentTheme === "dark" ? "light" : "dark";
   localStorage.setItem("pp-theme", currentTheme);
   applyTheme(currentTheme);
+  if (typeof renderChart === "function") renderChart();
 });
 
 /* ---- Funnel ---- */
@@ -444,64 +562,74 @@ funnelRows.innerHTML = DATA.funnel.map((s, i) => {
   return `
     <div class="funnel-row">
       <span class="funnel-name">${s.stage}</span>
-      <span class="funnel-track"><span class="funnel-fill ${weak ? "weak" : ""}" style="width:${width}%"></span></span>
+      <span class="funnel-track"><span class="funnel-fill ${weak ? "weak" : ""}" data-target="${width}"></span></span>
       <span class="funnel-count">${s.count}</span>
       <span class="funnel-conv ${weak ? "weak" : ""}">${conv === null ? "—" : conv + "%"}${weak ? " ⚠" : ""}</span>
     </div>
   `;
 }).join("");
+requestAnimationFrame(() => requestAnimationFrame(() => {
+  document.querySelectorAll(".funnel-fill").forEach(el => { el.style.width = el.dataset.target + "%"; });
+}));
 
 /* ---- Weekly trend chart ---- */
-const ctx = document.getElementById("trendChart").getContext("2d");
-const cs = getComputedStyle(document.documentElement);
-const teal = cs.getPropertyValue("--teal").trim();
-const accent = cs.getPropertyValue("--accent").trim();
-const ink = cs.getPropertyValue("--ink").trim();
-const lineSoft = cs.getPropertyValue("--line-soft").trim();
-
-new Chart(ctx, {
-  type: "line",
-  data: {
-    labels: DATA.weeks.labels,
-    datasets: [
-      {
-        label: "Leads",
-        data: DATA.weeks.leads,
-        borderColor: teal,
-        backgroundColor: teal + "22",
-        fill: true,
-        tension: 0.35,
-        pointRadius: 3,
-        pointBackgroundColor: teal,
-        pointHoverRadius: 5,
-      },
-      {
-        label: "Calls booked",
-        data: DATA.weeks.calls,
-        borderColor: accent,
-        backgroundColor: "transparent",
-        borderDash: [4, 3],
-        fill: false,
-        tension: 0.35,
-        pointRadius: 3,
-        pointBackgroundColor: accent,
-        pointHoverRadius: 5,
-      },
-    ],
-  },
-  options: {
-    responsive: true,
-    plugins: {
-      legend: { position: "bottom", labels: { color: ink, font: { family: "ui-monospace, monospace", size: 11 }, boxWidth: 10 } },
-      tooltip: { mode: "index", intersect: false },
+/* Rebuilt (not just restyled) on every theme change — Chart.js bakes colors
+   into the canvas at construction time, so a CSS variable flip alone leaves
+   old text invisible against the new background. */
+const trendCtx = document.getElementById("trendChart").getContext("2d");
+let trendChart = null;
+function renderChart() {
+  const cs = getComputedStyle(document.documentElement);
+  const teal = cs.getPropertyValue("--teal").trim();
+  const accent = cs.getPropertyValue("--accent").trim();
+  const ink = cs.getPropertyValue("--ink").trim();
+  const lineSoft = cs.getPropertyValue("--line-soft").trim();
+  if (trendChart) trendChart.destroy();
+  trendChart = new Chart(trendCtx, {
+    type: "line",
+    data: {
+      labels: DATA.weeks.labels,
+      datasets: [
+        {
+          label: "Leads",
+          data: DATA.weeks.leads,
+          borderColor: teal,
+          backgroundColor: teal + "22",
+          fill: true,
+          tension: 0.35,
+          pointRadius: 3,
+          pointBackgroundColor: teal,
+          pointHoverRadius: 5,
+        },
+        {
+          label: "Calls booked",
+          data: DATA.weeks.calls,
+          borderColor: accent,
+          backgroundColor: "transparent",
+          borderDash: [4, 3],
+          fill: false,
+          tension: 0.35,
+          pointRadius: 3,
+          pointBackgroundColor: accent,
+          pointHoverRadius: 5,
+        },
+      ],
     },
-    scales: {
-      x: { grid: { color: lineSoft }, ticks: { color: ink, font: { size: 10.5 } } },
-      y: { beginAtZero: true, grid: { color: lineSoft }, ticks: { color: ink, font: { size: 10.5 }, stepSize: 2 } },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: "bottom", labels: { color: ink, font: { family: "ui-monospace, monospace", size: 11 }, boxWidth: 10 } },
+        tooltip: { mode: "index", intersect: false },
+      },
+      scales: {
+        x: { grid: { color: lineSoft }, ticks: { color: ink, font: { size: 10.5 } } },
+        y: { beginAtZero: true, grid: { color: lineSoft }, ticks: { color: ink, font: { size: 10.5 }, stepSize: 2 } },
+      },
+      interaction: { mode: "nearest", axis: "x", intersect: false },
     },
-    interaction: { mode: "nearest", axis: "x", intersect: false },
-  },
-});
+  });
+}
+renderChart();
 </script>
 </body>
 </html>
