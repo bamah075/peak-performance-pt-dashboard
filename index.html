@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Peak Performance PT — Client Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --ink: #17222a;
+    --paper: #f2f4f2;
+    --paper-raised: #ffffff;
+    --line: #d9dedb;
+    --line-soft: #e8ebe9;
+    --accent: #ff5f3e;
+    --teal: #1f6f6b;
+    --amber: #c98a1f;
+    --amber-bg: #fbf1de;
+    --slate: #57666c;
+    --danger: #c1442e;
+    --danger-bg: #fbe9e5;
+    --win: #2c7a4d;
+    --win-bg: #e9f4ee;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace;
+    --grotesk: "Helvetica Neue", Arial, ui-sans-serif, sans-serif;
+    --radius: 6px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #ecefec; --paper: #12171a; --paper-raised: #1a2124;
+      --line: #2c383b; --line-soft: #232d30;
+      --accent: #ff7a5c; --teal: #4fb3ad; --amber: #e8b455; --amber-bg: #2c260f;
+      --slate: #9fb0b5; --danger: #e07357; --danger-bg: #2c1712; --win: #4fbd82; --win-bg: #10281a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #ecefec; --paper: #12171a; --paper-raised: #1a2124;
+    --line: #2c383b; --line-soft: #232d30;
+    --accent: #ff7a5c; --teal: #4fb3ad; --amber: #e8b455; --amber-bg: #2c260f;
+    --slate: #9fb0b5; --danger: #e07357; --danger-bg: #2c1712; --win: #4fbd82; --win-bg: #10281a;
+  }
+  :root[data-theme="light"] {
+    --ink: #17222a; --paper: #f2f4f2; --paper-raised: #ffffff;
+    --line: #d9dedb; --line-soft: #e8ebe9;
+    --accent: #ff5f3e; --teal: #1f6f6b; --amber: #c98a1f; --amber-bg: #fbf1de;
+    --slate: #57666c; --danger: #c1442e; --danger-bg: #fbe9e5; --win: #2c7a4d; --win-bg: #e9f4ee;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--grotesk);
+    line-height: 1.45;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 32px 24px 80px; }
+
+  /* Header */
+  .topbar {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 20px; flex-wrap: wrap; margin-bottom: 28px;
+  }
+  .brand-eyebrow {
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--slate); margin: 0 0 6px;
+  }
+  h1 { font-size: clamp(24px, 3.4vw, 32px); font-weight: 800; letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
+  .updated { font-family: var(--mono); font-size: 12px; color: var(--slate); margin-top: 8px; }
+  .updated b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+  /* Health banner */
+  .health-banner {
+    display: flex; align-items: center; gap: 16px;
+    border: 1px solid var(--line); border-radius: var(--radius);
+    background: var(--paper-raised); padding: 16px 20px; margin-bottom: 28px;
+  }
+  .health-dot { width: 14px; height: 14px; border-radius: 50%; flex: none; }
+  .health-dot.green { background: var(--win); box-shadow: 0 0 0 4px var(--win-bg); }
+  .health-dot.amber { background: var(--amber); box-shadow: 0 0 0 4px var(--amber-bg); }
+  .health-dot.red { background: var(--danger); box-shadow: 0 0 0 4px var(--danger-bg); }
+  .health-copy .label {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--slate); margin: 0 0 3px;
+  }
+  .health-copy .msg { font-size: 15px; font-weight: 600; margin: 0; }
+  .health-copy .sub { font-size: 13.5px; color: var(--slate); margin: 3px 0 0; }
+
+  /* KPI grid */
+  .kpi-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 14px; margin-bottom: 32px;
+  }
+  .kpi-card {
+    background: var(--paper-raised); border: 1px solid var(--line); border-left: 3px solid var(--teal);
+    border-radius: var(--radius); padding: 16px 18px;
+  }
+  .kpi-card.status-amber { border-left-color: var(--amber); }
+  .kpi-card.status-red { border-left-color: var(--danger); }
+  .kpi-card.status-green { border-left-color: var(--win); }
+  .kpi-label {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--slate); margin: 0 0 8px;
+  }
+  .kpi-value { font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; margin: 0; line-height: 1; }
+  .kpi-value .unit { font-size: 15px; font-weight: 600; color: var(--slate); margin-left: 4px; }
+  .kpi-sub { font-size: 12.5px; color: var(--slate); margin: 8px 0 0; display: flex; align-items: center; gap: 6px; }
+  .pill {
+    font-family: var(--mono); font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 20px;
+  }
+  .pill.green { color: var(--win); background: var(--win-bg); }
+  .pill.amber { color: var(--amber); background: var(--amber-bg); }
+  .pill.red { color: var(--danger); background: var(--danger-bg); }
+
+  /* Panels */
+  .panel-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; margin-bottom: 18px; }
+  @media (max-width: 900px) { .panel-grid { grid-template-columns: 1fr; } }
+  .panel {
+    background: var(--paper-raised); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 20px 22px;
+  }
+  .panel-title {
+    display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px;
+  }
+  .panel-title h2 { font-size: 15.5px; font-weight: 700; margin: 0; }
+  .panel-title .hint { font-family: var(--mono); font-size: 11px; color: var(--slate); }
+  .panel-note { font-size: 12.5px; color: var(--slate); margin: 2px 0 14px; }
+  .chart-box { overflow-x: auto; }
+  .chart-box canvas { min-width: 480px; }
+
+  /* Funnel table */
+  .funnel-rows { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+  .funnel-row { display: grid; grid-template-columns: 128px 1fr 46px 60px; align-items: center; gap: 10px; }
+  .funnel-name { font-size: 12.5px; font-weight: 600; }
+  .funnel-track { background: var(--line-soft); border-radius: 4px; height: 10px; position: relative; overflow: hidden; }
+  .funnel-fill { display: block; background: var(--teal); height: 100%; border-radius: 4px; }
+  .funnel-fill.weak { background: var(--danger); }
+  .funnel-count { font-family: var(--mono); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; }
+  .funnel-conv { font-family: var(--mono); font-size: 11px; text-align: right; color: var(--slate); font-variant-numeric: tabular-nums; }
+  .funnel-conv.weak { color: var(--danger); font-weight: 700; }
+
+  footer {
+    margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line);
+    font-family: var(--mono); font-size: 11px; color: var(--slate);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div>
+      <p class="brand-eyebrow">Client Dashboard</p>
+      <h1>Peak Performance PT</h1>
+      <p class="updated">Last updated <b id="updatedStamp">—</b> · Goal: 20 leads / 10 discovery calls per month</p>
+    </div>
+  </div>
+
+  <div class="health-banner">
+    <span class="health-dot" id="healthDot"></span>
+    <div class="health-copy">
+      <p class="label">System health</p>
+      <p class="msg" id="healthMsg">—</p>
+      <p class="sub" id="healthSub">—</p>
+    </div>
+  </div>
+
+  <div class="kpi-grid" id="kpiGrid"></div>
+
+  <div class="panel-grid">
+    <div class="panel">
+      <div class="panel-title">
+        <h2>Pipeline funnel — this month</h2>
+        <span class="hint">contacts by stage</span>
+      </div>
+      <p class="panel-note">Conversion is the % of contacts that moved from the previous stage. Lowest conversion is flagged.</p>
+      <div class="funnel-rows" id="funnelRows"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">
+        <h2>Weekly trend</h2>
+        <span class="hint">last 8 weeks</span>
+      </div>
+      <p class="panel-note">Leads captured vs. discovery calls booked, per week.</p>
+      <div class="chart-box"><canvas id="trendChart" height="230"></canvas></div>
+    </div>
+  </div>
+
+  <footer>
+    <span>Peak Performance PT — Client Dashboard</span>
+    <span>Built by Undeniable Mentoring · dummy data for demo purposes</span>
+  </footer>
+
+</div>
+
+<script>
+/* ---------------------------------------------------------------
+   DUMMY DATA — swap this object for a live GHL / Sheets feed later.
+   All KPI, health, and chart logic below derives from this alone.
+---------------------------------------------------------------- */
+const DATA = {
+  updated: "31 Jul 2026, 9:40 AM",
+  goals: { leadsPerMonth: 20, callsPerMonth: 10 },
+  leads: { thisWeek: 8, lastWeek: 6, thisMonth: 26, allTime: 61 },
+  calls: { bookedThisMonth: 7, bookedAllTime: 15, wonAllTime: 3 },
+  funnel: [
+    { stage: "Lead Captured",   count: 26 },
+    { stage: "Nurturing",       count: 24 },
+    { stage: "Engaged",         count: 15 },
+    { stage: "Call Booked",     count: 7  },
+    { stage: "Call Completed",  count: 5  },
+    { stage: "Proposal Sent",   count: 4  },
+    { stage: "Won — Enrolled",  count: 2  },
+  ],
+  weeks: {
+    labels: ["Jun 1", "Jun 8", "Jun 15", "Jun 22", "Jun 29", "Jul 6", "Jul 13", "Jul 20"],
+    leads:  [4, 5, 4, 6, 5, 7, 6, 8],
+    calls:  [1, 1, 1, 2, 2, 1, 2, 2],
+  },
+};
+
+function pct(a, b) { return b === 0 ? 0 : Math.round((a / b) * 1000) / 10; }
+function statusFor(ratio) { return ratio >= 80 ? "green" : ratio >= 50 ? "amber" : "red"; }
+
+document.getElementById("updatedStamp").textContent = DATA.updated;
+
+/* ---- Health check (green / amber / red) ---- */
+const leadsRatio = pct(DATA.leads.thisMonth, DATA.goals.leadsPerMonth);
+const callsRatio = pct(DATA.calls.bookedThisMonth, DATA.goals.callsPerMonth);
+const leadsStatus = statusFor(leadsRatio);
+const callsStatus = statusFor(callsRatio);
+const rank = { green: 0, amber: 1, red: 2 };
+const overall = rank[leadsStatus] >= rank[callsStatus] ? leadsStatus : callsStatus;
+const overallLabel = { green: "On track", amber: "Needs attention", red: "Action required" }[overall];
+
+document.getElementById("healthDot").classList.add(overall);
+document.getElementById("healthMsg").textContent = `${overallLabel} — driven by discovery calls booked`;
+document.getElementById("healthSub").textContent =
+  callsStatus !== "green"
+    ? `Leads are strong (${leadsRatio}% of goal), but only ${DATA.calls.bookedThisMonth} of ${DATA.goals.callsPerMonth} discovery calls are booked (${callsRatio}%). Focus this week: convert warm leads into booked calls.`
+    : `Leads at ${leadsRatio}% of goal and calls booked at ${callsRatio}% of goal — everything is tracking as expected.`;
+
+/* ---- KPI cards ---- */
+const kpis = [
+  { label: "Leads — this week", value: DATA.leads.thisWeek, sub: `vs ${DATA.leads.lastWeek} last week`, status: DATA.leads.thisWeek >= DATA.leads.lastWeek ? "green" : "amber" },
+  { label: "Leads — this month", value: DATA.leads.thisMonth, unit: `/ ${DATA.goals.leadsPerMonth} goal`, status: leadsStatus, pillText: `${leadsRatio}%` },
+  { label: "Leads — all time", value: DATA.leads.allTime, status: "green" },
+  { label: "Calls booked — this month", value: DATA.calls.bookedThisMonth, unit: `/ ${DATA.goals.callsPerMonth} goal`, status: callsStatus, pillText: `${callsRatio}%` },
+  { label: "Calls booked — all time", value: DATA.calls.bookedAllTime, status: "green" },
+  { label: "Clients won — all time", value: DATA.calls.wonAllTime, status: "green" },
+];
+const kpiGrid = document.getElementById("kpiGrid");
+kpiGrid.innerHTML = kpis.map(k => `
+  <div class="kpi-card status-${k.status}">
+    <p class="kpi-label">${k.label}</p>
+    <p class="kpi-value">${k.value}${k.unit ? `<span class="unit">${k.unit}</span>` : ""}</p>
+    <p class="kpi-sub">${k.pillText ? `<span class="pill ${k.status}">${k.pillText}</span>` : ""}${k.sub || ""}</p>
+  </div>
+`).join("");
+
+/* ---- Funnel ---- */
+const funnelMax = DATA.funnel[0].count;
+const funnelRows = document.getElementById("funnelRows");
+let weakestIdx = 1, weakestConv = 100;
+const convs = DATA.funnel.map((s, i) => {
+  if (i === 0) return null;
+  const c = pct(s.count, DATA.funnel[i - 1].count);
+  if (c < weakestConv) { weakestConv = c; weakestIdx = i; }
+  return c;
+});
+funnelRows.innerHTML = DATA.funnel.map((s, i) => {
+  const width = pct(s.count, funnelMax);
+  const conv = convs[i];
+  const weak = i === weakestIdx;
+  return `
+    <div class="funnel-row">
+      <span class="funnel-name">${s.stage}</span>
+      <span class="funnel-track"><span class="funnel-fill ${weak ? "weak" : ""}" style="width:${width}%"></span></span>
+      <span class="funnel-count">${s.count}</span>
+      <span class="funnel-conv ${weak ? "weak" : ""}">${conv === null ? "—" : conv + "%"}${weak ? " ⚠" : ""}</span>
+    </div>
+  `;
+}).join("");
+
+/* ---- Weekly trend chart ---- */
+const ctx = document.getElementById("trendChart").getContext("2d");
+const cs = getComputedStyle(document.documentElement);
+const teal = cs.getPropertyValue("--teal").trim();
+const accent = cs.getPropertyValue("--accent").trim();
+const ink = cs.getPropertyValue("--ink").trim();
+const lineSoft = cs.getPropertyValue("--line-soft").trim();
+
+new Chart(ctx, {
+  type: "line",
+  data: {
+    labels: DATA.weeks.labels,
+    datasets: [
+      {
+        label: "Leads",
+        data: DATA.weeks.leads,
+        borderColor: teal,
+        backgroundColor: teal + "22",
+        fill: true,
+        tension: 0.35,
+        pointRadius: 3,
+        pointBackgroundColor: teal,
+        pointHoverRadius: 5,
+      },
+      {
+        label: "Calls booked",
+        data: DATA.weeks.calls,
+        borderColor: accent,
+        backgroundColor: "transparent",
+        borderDash: [4, 3],
+        fill: false,
+        tension: 0.35,
+        pointRadius: 3,
+        pointBackgroundColor: accent,
+        pointHoverRadius: 5,
+      },
+    ],
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: "bottom", labels: { color: ink, font: { family: "ui-monospace, monospace", size: 11 }, boxWidth: 10 } },
+      tooltip: { mode: "index", intersect: false },
+    },
+    scales: {
+      x: { grid: { color: lineSoft }, ticks: { color: ink, font: { size: 10.5 } } },
+      y: { beginAtZero: true, grid: { color: lineSoft }, ticks: { color: ink, font: { size: 10.5 }, stepSize: 2 } },
+    },
+    interaction: { mode: "nearest", axis: "x", intersect: false },
+  },
+});
+</script>
+</body>
+</html>
